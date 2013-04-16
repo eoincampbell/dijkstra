@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Dijkstra.Core;
 using Dijkstra.Implementation;
@@ -17,18 +13,20 @@ namespace Dijkstra.Interactive
     {
         private IDistanceCalculator<RailNetwork, City, Route> _distanceCalculator;
 
+        private const string DefaultGraph = "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7";
+
         private Dictionary<int, Color> colors
             = new Dictionary<int, Color>()
                   {
-                      {1, Color.DarkRed},
+                      {1, Color.Black},
                       {2, Color.DarkRed},
-                      {3, Color.DarkRed},
-                      {4, Color.Red},
-                      {5, Color.Red},
-                      {6, Color.Red},
-                      {7, Color.Orange},
-                      {8, Color.Orange},
-                      {9, Color.Orange}
+                      {3, Color.Red},
+                      {4, Color.Orange},
+                      {5, Color.Yellow},
+                      {6, Color.YellowGreen},
+                      {7, Color.DarkGreen},
+                      {8, Color.LightSeaGreen},
+                      {9, Color.Blue}
                   };
                    
         public MainUI()
@@ -45,6 +43,7 @@ namespace Dijkstra.Interactive
         {
             try
             {
+                panel1.Controls.Clear();
                 using (var graphics = panel1.CreateGraphics())
                 {
                     graphics.Clear(Color.White);
@@ -270,24 +269,155 @@ namespace Dijkstra.Interactive
             }
         }
 
+        /// <summary>
+        /// Tests the shortest distance button click.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void TestShortestDistanceButtonClick(object sender, EventArgs e)
         {
+            if (!RedrawGraph())
+                return;
 
+            if(Test8.Checked)
+            {
+                var distance = _distanceCalculator.CalculateShortestRoute("A", "C");
+
+                MessageBox.Show(string.Format("Output #8: {0}", distance));
+            }
+            else if(Test9.Checked)
+            {
+                var distance = _distanceCalculator.CalculateShortestRouteBackToSelf("B");
+
+                MessageBox.Show(string.Format("Output #9: {0}", distance));
+            }
+            else if(TestShortestDistanceCustom.Checked)
+            {
+                try
+                {
+                    var start = TestShortestDistanceCustomStart.Text;
+                    var end = TestShortestDistanceCustomEnd.Text;
+
+                    double distance = 0;
+                    if (start == end)
+                    {
+                        distance = _distanceCalculator.CalculateShortestRouteBackToSelf(start);
+                    }
+                    else
+                    {
+                        distance = _distanceCalculator.CalculateShortestRoute(start, end);
+                    }
+
+
+                    MessageBox.Show(string.Format("Output #Custom: {0}", distance));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(string.Format("Output #Custom: {0}", ex.Message));
+                }
+            }
         }
 
+        /// <summary>
+        /// Tests the max node count button click.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void TestMaxNodeCountButtonClick(object sender, EventArgs e)
         {
+            if (!RedrawGraph())
+                return;
 
+            if(Test6.Checked)
+            {
+                var paths = _distanceCalculator.FindAllPathsWithMaximumNodeCount("C", "C", 3);
+
+                MessageBox.Show(string.Format("Output #6 {0}", paths));
+            }
+            else if(TestCustomMaxNodeCount.Checked)
+            {
+                try
+                {
+                    var start = TestCustomMaxNodeCountStart.Text;
+                    var end = TestCustomMaxNodeCountEnd.Text;
+                    var stops = int.Parse(TestCustomMaxNodeCountStops.Text);
+                    var paths = _distanceCalculator.FindAllPathsWithMaximumNodeCount(start, end, stops);
+
+                    MessageBox.Show(string.Format("Output #Custom: {0}", paths));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(string.Format("Output #Custom: {0}", ex.Message));
+                }
+            }
         }
 
+        /// <summary>
+        /// Tests the exact node count button click.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void TestExactNodeCountButtonClick(object sender, EventArgs e)
         {
+            if (!RedrawGraph())
+                return;
 
+            if (Test7.Checked)
+            {
+                var paths = _distanceCalculator.FindAllPathsWithExactNodeCount("A", "C", 4);
+
+                MessageBox.Show(string.Format("Output #7 {0}", paths));
+            }
+            else if (TestCustomExactNodeCount.Checked)
+            {
+                try
+                {
+                    var start = TestCustomExactNodeCountStart.Text;
+                    var end = TestCustomExactNodeCountEnd.Text;
+                    var stops = int.Parse(TestCustomExactNodeCountStops.Text);
+                    var paths = _distanceCalculator.FindAllPathsWithExactNodeCount(start, end, stops);
+
+                    MessageBox.Show(string.Format("Output #Custom: {0}", paths));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(string.Format("Output #Custom: {0}", ex.Message));
+                }
+            }
         }
 
+        /// <summary>
+        /// Tests the max distance button click.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void TestMaxDistanceButtonClick(object sender, EventArgs e)
         {
+            if (!RedrawGraph())
+                return;
 
+            if (Test10.Checked)
+            {
+                var paths = _distanceCalculator.FindAllPathsWithMaximumDistance("C", "C", 30);
+
+                MessageBox.Show(string.Format("Output #10 {0}", paths));
+            }
+            else if (TestCustomMaxDistance.Checked)
+            {
+                try
+                {
+                    var start = TestCustomMaxDistanceStart.Text;
+                    var end = TestCustomMaxDistanceEnd.Text;
+                    var dist = int.Parse(TestCustomMaxDistanceDistance.Text);
+                    var paths = _distanceCalculator.FindAllPathsWithMaximumDistance(start, end, dist);
+
+                    MessageBox.Show(string.Format("Output #Custom: {0}", paths));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(string.Format("Output #Custom: {0}", ex.Message));
+                }
+            }
         }
 
         

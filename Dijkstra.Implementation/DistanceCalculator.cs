@@ -315,6 +315,12 @@ namespace Dijkstra.Implementation
 
 
             Debug.WriteLine(Graph.Nodes[endNode].ShortestPath.PrintEdgePath<TU,TV>());
+
+            if(double.IsPositiveInfinity(total))
+            {
+                throw new InvalidOperationException("NO SUCH ROUTE");
+            }
+
             return total;
 
         }
